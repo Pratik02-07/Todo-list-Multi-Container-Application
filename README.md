@@ -70,51 +70,54 @@ Todo-list-Multi-Container/
 
 ---
 
-## 🌐 Custom Domain & Route 53 CNAME Setup
+## 🌐 Adding CNAME in get.tech (`todo.pratikpatil.tech`)
 
-This project sets up your custom domain via AWS Route 53 with an automated SSL certificate:
+This project is configured for **Option 1**: adding the CNAME directly in **get.tech**, keeping your main website `http://pratikpatil.tech/` active and completely untouched.
 
-### Step 1 — Configure Terraform Variables
-In `infrastructure/terraform/variables.tf` (or by using a `terraform.tfvars` file):
-- `domain_name`: Your registered apex domain (e.g. `example.com` bought on GoDaddy, Namecheap, etc.)
-- `subdomain`: Subdomain prefix for CNAME (e.g. `todo`, making `todo.example.com`)
-
-### Step 2 — Provision Infrastructure with Terraform
+### Step 1 — Provision Infrastructure with Terraform
 
 ```bash
 cd infrastructure/terraform
 
 terraform init
-terraform plan \
+terraform apply \
   -var="key_name=your-ec2-keypair" \
-  -var="dockerhub_image=yourusername/todo-app" \
-  -var="domain_name=yourdomain.com" \
-  -var="subdomain=todo"
-
-terraform apply
+  -var="dockerhub_image=yourusername/todo-app:latest"
 ```
 
-Terraform creates:
-1. **EC2 instance** (`t2.micro` running Ubuntu with Docker preinstalled).
-2. **Security Group** with ports `80` (HTTP), `443` (HTTPS), and `22` (SSH) open.
-3. **Route 53 Hosted Zone** for `yourdomain.com`.
-4. **Route 53 CNAME Record** pointing `todo.yourdomain.com` directly to the EC2 Public DNS (`ec2-xx-xx.compute.amazonaws.com`).
+From the outputs, take note of:
+- `public_ip`: used for your Ansible inventory.
+- `public_dns`: the EC2 DNS target for get.tech (e.g. `ec2-xx-xx-xx-xx.compute-1.amazonaws.com`).
 
-### Step 3 — Point Registrar Nameservers to AWS Route 53
-From the `terraform output`, copy the 4 `route53_name_servers`:
+### Step 2 — Add CNAME Record in get.tech Control Panel
+
+1. Log in to [get.tech / Radix control panel](https://manage.tech.host).
+2. Go to **Domain Registration** → **Manage Orders** → select **`pratikpatil.tech`**.
+3. Under **DNS Management**, click **Manage DNS**.
+4. Click **Add CNAME Record**:
+   - **Host Name**: `todo`
+   - **Type**: `CNAME`
+   - **Value**: `<paste your EC2 public_dns>`
+   - **TTL**: `300` (or `7200`)
+5. Click **Save**.
+
+### Step 3 — Deploy & Issue SSL with Ansible
+
+Add the `public_ip` to `infrastructure/ansible/inventory.ini`, then run:
+
+```bash
+cd infrastructure/ansible
+
+ansible-playbook -i inventory.ini playbook.yml
 ```
-route53_name_servers = [
-  "ns-123.awsdns-12.com",
-  "ns-456.awsdns-34.net",
-  "ns-789.awsdns-56.org",
-  "ns-012.awsdns-78.co.uk",
-]
-```
-1. Log in to your registrar dashboard (**GoDaddy**, **Namecheap**, **Hostinger**, etc.).
-2. Go to your domain's **DNS / Nameservers** management section.
-3. Switch from default nameservers to **Custom Nameservers**.
-4. Paste the 4 AWS Route 53 nameservers and save.
-5. *(Allow 5–15 minutes for worldwide DNS delegation to propagate).*
+
+The playbook will:
+1. Deploy the multi-container stack (`app`, `mongo`, `nginx`).
+2. Run Certbot to verify domain ownership via HTTP-01 challenge on `todo.pratikpatil.tech`.
+3. Issue and install an official Let's Encrypt SSL certificate.
+4. Reload Nginx and configure auto-renewal cron.
+5. Your API will be live at: **`https://todo.pratikpatil.tech/api/todos`**.
+
 
 ---
 

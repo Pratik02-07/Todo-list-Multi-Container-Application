@@ -2,3 +2,7 @@ node_modules/
 .env
 npm-debug.log
 .DS_Store
+.reticle
+.vscode
+.reticle-setup-crash.log
+docs/superpowers/specs/2026-11-03-api-validation-nginx-persistence-design.md

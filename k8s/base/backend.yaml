@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: pratik0207/todolist-backend:v1.1.0
+          image: pratik0207/todolist-backend:sha-6fcbeaa636d66d3e234fc54f0e9c490751610b71
           imagePullPolicy: Always
           ports:
             - name: http

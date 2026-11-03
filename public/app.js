@@ -7,6 +7,7 @@ const errorAlert = document.getElementById('error-alert');
 const todoForm = document.getElementById('todo-form');
 const titleInput = document.getElementById('todo-title');
 const descInput = document.getElementById('todo-desc');
+const btnAddTodo = document.getElementById('btn-add-todo');
 const todoList = document.getElementById('todo-list');
 const totalCount = document.getElementById('total-count');
 const completedCount = document.getElementById('completed-count');
@@ -66,14 +67,13 @@ function renderTodos() {
             type="checkbox"
             class="todo-checkbox"
             ${todo.completed ? 'checked' : ''}
-            onchange="handleToggle('${todo._id}', this.checked)"
           />
           <div class="todo-content">
             <span class="todo-title">${escapeHtml(todo.title)}</span>
             ${todo.description ? `<span class="todo-desc">${escapeHtml(todo.description)}</span>` : ''}
           </div>
         </div>
-        <button class="btn-delete" onclick="handleDelete('${todo._id}')">Delete</button>
+        <button class="btn-delete">Delete</button>
       </div>
     `
     )
@@ -100,6 +100,7 @@ async function loadTodos() {
     }
   } catch (err) {
     showError('Unable to connect to the Todo API');
+    todoList.innerHTML = '<div class="empty-state">Unable to load tasks. Please refresh to try again.</div>';
   }
 }
 
@@ -113,6 +114,10 @@ todoForm.addEventListener('submit', async (e) => {
   if (!title) {
     showError('Task title cannot be empty');
     return;
+  }
+
+  if (btnAddTodo) {
+    btnAddTodo.disabled = true;
   }
 
   try {
@@ -139,6 +144,10 @@ todoForm.addEventListener('submit', async (e) => {
     }
   } catch (err) {
     showError('Network error while creating task');
+  } finally {
+    if (btnAddTodo) {
+      btnAddTodo.disabled = false;
+    }
   }
 });
 
@@ -183,9 +192,25 @@ async function handleDelete(id) {
   }
 }
 
-// Global functions for inline HTML event handlers
-window.handleToggle = handleToggle;
-window.handleDelete = handleDelete;
+// Event delegation on todoList
+todoList.addEventListener('change', (e) => {
+  if (e.target.classList.contains('todo-checkbox')) {
+    const item = e.target.closest('.todo-item');
+    if (item && item.dataset.id) {
+      handleToggle(item.dataset.id, e.target.checked);
+    }
+  }
+});
+
+todoList.addEventListener('click', (e) => {
+  const deleteBtn = e.target.closest('.btn-delete');
+  if (deleteBtn) {
+    const item = deleteBtn.closest('.todo-item');
+    if (item && item.dataset.id) {
+      handleDelete(item.dataset.id);
+    }
+  }
+});
 
 // Initialize on page load
 fetchDeploymentMetadata();

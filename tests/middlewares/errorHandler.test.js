@@ -78,6 +78,19 @@ describe('errorHandler middleware', () => {
     ]);
   });
 
+  it('handles Mongoose ValidationError safely when errors object is missing', () => {
+    const err = new Error('Validation failed');
+    err.name = 'ValidationError';
+    const req = {};
+    const res = createMockRes();
+
+    errorHandler(err, req, res, () => {});
+
+    assert.strictEqual(res.statusCode, 500);
+    assert.strictEqual(res.body.success, false);
+    assert.strictEqual(res.body.message, 'Internal server error');
+  });
+
   it('handles generic unhandled error with 500', () => {
     const err = new Error('Unexpected database failure');
     const req = {};

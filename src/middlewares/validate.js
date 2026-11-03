@@ -14,12 +14,12 @@ if (typeof z.setErrorMap === 'function') {
 
 /**
  * Generic Express validation middleware using Zod schemas.
- * @param {Object} schemas
+ * @param {Object} [schemas={}]
  * @param {import('zod').ZodSchema} [schemas.body]
  * @param {import('zod').ZodSchema} [schemas.params]
  * @param {import('zod').ZodSchema} [schemas.query]
  */
-const validate = (schemas) => (req, res, next) => {
+const validate = (schemas = {}) => (req, res, next) => {
   const errors = [];
 
   ['params', 'query', 'body'].forEach((location) => {

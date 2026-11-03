@@ -53,4 +53,19 @@ describe('validate middleware', () => {
     assert.strictEqual(jsonPayload.errors[0].field, 'title');
     assert.strictEqual(jsonPayload.errors[0].message, 'Title is required');
   });
+
+  it('calls next() when invoked with default empty schemas', () => {
+    const middleware = validate();
+    const req = { body: { title: 'Test' } };
+    const res = {};
+    let nextCalled = false;
+
+    middleware(req, res, (err) => {
+      assert.strictEqual(err, undefined);
+      nextCalled = true;
+    });
+
+    assert.strictEqual(nextCalled, true);
+  });
 });
+

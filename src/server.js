@@ -3,6 +3,7 @@ const express = require('express');
 const connectDB = require('./config/db');
 const todoRoutes = require('./routes/todoRoutes');
 const errorHandler = require('./middlewares/errorHandler');
+const AppError = require('./utils/AppError');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,11 +27,8 @@ app.get('/health', (req, res) => {
 app.use('/api/todos', todoRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `Route not found: ${req.method} ${req.originalUrl}`,
-  });
+app.use((req, res, next) => {
+  next(new AppError(`Route not found: ${req.method} ${req.originalUrl}`, 404));
 });
 
 // ─── Centralized Error Handler ───────────────────────────────────────────────

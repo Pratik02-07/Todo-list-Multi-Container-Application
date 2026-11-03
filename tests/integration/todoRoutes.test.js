@@ -96,5 +96,7 @@ describe('API Routes & Validation Integration', () => {
     const res = await client.request('GET', '/api/unknown-endpoint');
     assert.strictEqual(res.status, 404);
     assert.strictEqual(res.body.success, false);
+    assert.strictEqual(res.body.message, 'Route not found: GET /api/unknown-endpoint');
   });
 });
+

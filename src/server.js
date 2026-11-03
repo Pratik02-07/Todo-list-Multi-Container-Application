@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const connectDB = require('./config/db');
 const todoRoutes = require('./routes/todoRoutes');
+const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,42 +11,44 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// ─── Routes ───────────────────────────────────────────────────────────────────
+// ─── Health & Deployment Metadata Route ───────────────────────────────────────
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', uptime: process.uptime() });
+  res.status(200).json({
+    status: 'ok',
+    version: process.env.APP_VERSION || '1.0.0',
+    color: process.env.APP_COLOR || 'blue',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
 });
 
+// ─── API Routes ───────────────────────────────────────────────────────────────
 app.use('/api/todos', todoRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found' });
-});
-
-// ─── Global Error Handler ────────────────────────────────────────────────────
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({ 
-    success: false, 
-    message: err.message || 'Internal server error' 
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
   });
 });
+
+// ─── Centralized Error Handler ───────────────────────────────────────────────
+app.use(errorHandler);
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
 const startServer = async () => {
   try {
-    // Establish DB connection before starting up the server listener
     await connectDB();
-    app.listen(PORT, "0.0.0.0", () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error("Application startup failed:", error);
+    console.error('Application startup failed:', error);
     process.exit(1);
   }
 };
 
-// Only execute the startup sequence if this file is run directly (useful for testing frameworks)
 if (require.main === module) {
   startServer();
 }

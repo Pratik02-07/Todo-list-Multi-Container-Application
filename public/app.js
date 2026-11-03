@@ -1,8 +1,6 @@
 const API_BASE = '/api/todos';
-const HEALTH_URL = '/health';
 
 // DOM Elements
-const envBadge = document.getElementById('env-badge');
 const errorAlert = document.getElementById('error-alert');
 const todoForm = document.getElementById('todo-form');
 const titleInput = document.getElementById('todo-title');
@@ -24,27 +22,6 @@ function clearError() {
   errorAlert.classList.add('hidden');
 }
 
-async function fetchDeploymentMetadata() {
-  try {
-    const res = await fetch(HEALTH_URL);
-    if (!res.ok) throw new Error('Health check failed');
-    const data = await res.json();
-
-    const version = data.version || '1.0.0';
-    const color = (data.color || 'blue').toLowerCase();
-
-    envBadge.textContent = `v${version} [${color.toUpperCase()}]`;
-    envBadge.className = 'badge';
-    if (color === 'green') {
-      envBadge.classList.add('badge-green');
-    } else {
-      envBadge.classList.add('badge-blue');
-    }
-  } catch (err) {
-    envBadge.textContent = 'Offline';
-    envBadge.className = 'badge badge-loading';
-  }
-}
 
 function updateCounts() {
   totalCount.textContent = todos.length;
@@ -213,5 +190,4 @@ todoList.addEventListener('click', (e) => {
 });
 
 // Initialize on page load
-fetchDeploymentMetadata();
 loadTodos();

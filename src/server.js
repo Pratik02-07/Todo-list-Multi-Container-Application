@@ -16,8 +16,6 @@ app.use(express.urlencoded({ extended: false }));
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
-    version: process.env.APP_VERSION || '1.0.0',
-    color: process.env.APP_COLOR || 'blue',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
   });

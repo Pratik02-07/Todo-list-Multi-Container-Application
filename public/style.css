@@ -30,7 +30,7 @@ body {
   margin: 0 auto;
 }
 
-/* Header & Deployment Badge */
+/* Header */
 .app-header {
   display: flex;
   justify-content: space-between;
@@ -52,50 +52,6 @@ body {
   font-size: 0.9rem;
   color: var(--text-muted);
   margin-top: 0.25rem;
-}
-
-.deployment-box {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.25rem;
-}
-
-.badge-title {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.35rem 0.85rem;
-  border-radius: 9999px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition: all 0.2s ease;
-}
-
-.badge-loading {
-  background-color: #334155;
-  color: #cbd5e1;
-}
-
-/* Blue & Green themes for deployment */
-.badge-blue {
-  background-color: #1e3a8a;
-  color: #93c5fd;
-  border: 1px solid #3b82f6;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
-}
-
-.badge-green {
-  background-color: #064e3b;
-  color: #6ee7b7;
-  border: 1px solid #10b981;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 }
 
 /* Cards & Layout */
@@ -272,3 +228,4 @@ body {
   background-color: rgba(239, 68, 68, 0.1);
   color: var(--danger-hover);
 }
+

@@ -6,3 +6,8 @@ npm-debug.log
 .vscode
 .reticle-setup-crash.log
 docs/superpowers/specs/2026-11-03-api-validation-nginx-persistence-design.md
+.env.*
+!.env.example
+*.pem
+*.key
+vault-recovery/

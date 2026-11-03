@@ -42,7 +42,7 @@ const errorHandler = (err, req, res, next) => {
     message,
   };
 
-  if (errors && errors.length > 0) {
+  if (Array.isArray(errors) && errors.length > 0) {
     response.errors = errors;
   }
 
@@ -50,3 +50,4 @@ const errorHandler = (err, req, res, next) => {
 };
 
 module.exports = errorHandler;
+

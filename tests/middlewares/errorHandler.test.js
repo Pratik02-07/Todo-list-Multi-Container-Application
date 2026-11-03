@@ -59,6 +59,25 @@ describe('errorHandler middleware', () => {
     assert.strictEqual(res.body.message, 'Invalid ID format: invalid-mongo-id');
   });
 
+  it('handles Mongoose ValidationError with 400 and structured errors', () => {
+    const err = new Error('Validation failed');
+    err.name = 'ValidationError';
+    err.errors = {
+      title: { path: 'title', message: 'Path `title` is required.' },
+    };
+    const req = {};
+    const res = createMockRes();
+
+    errorHandler(err, req, res, () => {});
+
+    assert.strictEqual(res.statusCode, 400);
+    assert.strictEqual(res.body.success, false);
+    assert.strictEqual(res.body.message, 'Validation failed');
+    assert.deepStrictEqual(res.body.errors, [
+      { field: 'title', message: 'Path `title` is required.' },
+    ]);
+  });
+
   it('handles generic unhandled error with 500', () => {
     const err = new Error('Unexpected database failure');
     const req = {};
@@ -71,3 +90,4 @@ describe('errorHandler middleware', () => {
     assert.strictEqual(res.body.message, 'Internal server error');
   });
 });
+

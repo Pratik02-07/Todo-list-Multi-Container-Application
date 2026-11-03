@@ -6,9 +6,6 @@ const todoRoutes = require('./routes/todoRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ─── Connect to Database ──────────────────────────────────────────────────────
-connectDB();
-
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -28,13 +25,29 @@ app.use((req, res) => {
 // ─── Global Error Handler ────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ success: false, message: 'Internal server error' });
+  res.status(err.status || 500).json({ 
+    success: false, 
+    message: err.message || 'Internal server error' 
+  });
 });
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    // Establish DB connection before starting up the server listener
+    await connectDB();
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Application startup failed:", error);
+    process.exit(1);
+  }
+};
+
+// Only execute the startup sequence if this file is run directly (useful for testing frameworks)
+if (require.main === module) {
+  startServer();
+}
 
 module.exports = app;
-

@@ -1,7 +1,7 @@
 /**
  * Centralized global error handling middleware.
  */
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, _next) => {
   let statusCode = err.statusCode || err.status || 500;
   let message = err.message || 'Internal server error';
   let errors = err.errors;

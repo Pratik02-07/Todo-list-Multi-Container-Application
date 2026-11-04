@@ -6,3 +6,34 @@ npm-debug.log
 .vscode
 .reticle-setup-crash.log
 docs/superpowers/specs/2026-11-03-api-validation-nginx-persistence-design.md
+.env.*
+!.env.example
+*.pem
+*.key
+vault-recovery/
+# ==========================================
+# Terraform - Local files and sensitive data
+# ==========================================
+
+# Terraform working directories
+**/.terraform/**
+
+# Terraform state files and backups
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Terraform variable files
+*.tfvars
+*.tfvars.json
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Local override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+terraform/

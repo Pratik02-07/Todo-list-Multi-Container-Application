@@ -7,15 +7,19 @@ resources:
   - ../../base
   - namespace.yaml
   - configmap.yaml
-  - secret.example.yaml
+  - storageclass.yaml
   - ingress.yaml
+  - frontend-pdb.yaml
+  - backend-pdb.yaml
 
 images:
   - name: pratik0207/todolist-backend
-    newTag: sha-REPLACE_WITH_COMMIT_SHA
+    newTag: sha-4756af9d308930cd862f7d7341516f5fe77295c2
   - name: pratik0207/todolist-frontend
-    newTag: sha-REPLACE_WITH_COMMIT_SHA
+    newTag: sha-4756af9d308930cd862f7d7341516f5fe77295c2
 
 patches:
   - path: frontend-service.patch.yaml
   - path: mongodb-storage.patch.yaml
+  - path: frontend-topology.patch.yaml
+  - path: backend-topology.patch.yaml

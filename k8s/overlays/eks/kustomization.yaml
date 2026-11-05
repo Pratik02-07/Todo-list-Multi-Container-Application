@@ -5,9 +5,7 @@ namespace: todo-app
 
 resources:
   - ../../base
-  - namespace.yaml
   - configmap.yaml
-  - storageclass.yaml
   - ingress.yaml
   - frontend-pdb.yaml
   - backend-pdb.yaml

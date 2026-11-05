@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: todo-app
+spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: mongodb-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        # Leave storageClassName unset so the cluster's EBS CSI default
+        # StorageClass can provision an AZ-local gp3 volume.
+        resources:
+          requests:
+            storage: 8Gi

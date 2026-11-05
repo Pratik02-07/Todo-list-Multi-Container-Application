@@ -1,0 +1,95 @@
+name: Terraform CI
+
+on:
+    pull_request:
+        branches:
+            - main
+        paths:
+            - "terraform/**"
+            - ".github/workflows/tf.yml"
+    push:
+        branches:
+            - main
+        paths:
+            - "terraform/**"
+            - ".github/workflows/tf.yml"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+env:
+    TF_IN_AUTOMATION: "true"
+    TF_INPUT: "false"
+
+jobs:
+    validate:
+        name: Format and validate Terraform
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: "1.15.8"
+
+            - name: Terraform format check
+              working-directory: ${{ github.workspace }}
+              run: terraform fmt -check -recursive -diff terraform/
+
+            - name: Terraform init
+              working-directory: terraform/bootstrap/state-backend
+              run: terraform init -input=false -no-color
+
+            - name: Terraform validate
+              working-directory: terraform/bootstrap/state-backend
+              run: terraform validate -no-color
+
+    plan:
+        name: Terraform plan (main branch only)
+        needs: validate
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+
+        defaults:
+            run:
+                shell: bash
+                working-directory: terraform/bootstrap/state-backend
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: "1.15.8"
+
+            - name: Terraform init
+              run: terraform init -input=false -no-color
+
+            - name: Check AWS role configuration
+              env:
+                  TERRAFORM_PLAN_ROLE_ARN: ${{ secrets.TERRAFORM_PLAN_ROLE_ARN }}
+              run: |
+                  if [[ -z "$TERRAFORM_PLAN_ROLE_ARN" ]]; then
+                    echo "::error::Add the repository secret TERRAFORM_PLAN_ROLE_ARN with a dedicated, least-privilege AWS IAM role for Terraform plan."
+                    exit 1
+                  fi
+
+            - name: Configure AWS credentials with OIDC
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.TERRAFORM_PLAN_ROLE_ARN }}
+                  aws-region: ap-south-1
+                  role-session-name: TerraformPlanGitHubActions
+                  role-duration-seconds: 1800
+
+            - name: Terraform plan
+              run: terraform plan -input=false -no-color -lock-timeout=5m

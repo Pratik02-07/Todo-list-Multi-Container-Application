@@ -1,13 +1,3 @@
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-  }
-}
-
 # Unique S3 Bucket for Terraform State
 resource "aws_s3_bucket" "terraform_state" {
   bucket        = var.bucket_name

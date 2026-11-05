@@ -10,8 +10,7 @@ spec:
       spec:
         accessModes:
           - ReadWriteOnce
-        # Leave storageClassName unset so the cluster's EBS CSI default
-        # StorageClass can provision an AZ-local gp3 volume.
+        storageClassName: ebs-gp3
         resources:
           requests:
             storage: 8Gi

@@ -40,6 +40,14 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.34.1
+
+      - name: Validate EKS Kustomize overlay
+        run: kubectl kustomize k8s/overlays/eks > "$RUNNER_TEMP/eks-manifests.yaml"
+
       - name: Audit production dependencies
         run: npm audit --omit=dev
 

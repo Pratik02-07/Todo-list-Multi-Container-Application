@@ -1,6 +1,6 @@
 terraform {
   # Minimum core engine requirements
-  required_version = ">= 1.15.0"
+  required_version = ">= 1.5.0"
 
   # Declares plugins that Terraform must download
   required_providers {

@@ -4,21 +4,23 @@ This guide describes the EKS-specific Kustomize overlay. The existing `k8s/base`
 
 ## Prerequisites
 
-Before applying the overlay, the EKS cluster must have:
+Before applying the application overlay, the EKS platform must have:
 
 - The Amazon EBS CSI driver add-on installed with its IAM permissions configured.
 - A managed node group with nodes in at least two Availability Zones.
 - The AWS Load Balancer Controller installed and configured with subnet discovery.
 - Public ALB subnets tagged with `kubernetes.io/role/elb=1`.
+- The `todo-app` Namespace and `ebs-gp3` StorageClass created by Terraform or a cluster administrator. These are cluster-scoped resources and are intentionally excluded from the application overlay so the namespace-scoped GitHub deployer does not need cluster-wide permissions.
 
 The `ebs-gp3` StorageClass provisions encrypted gp3 EBS volumes using the EBS CSI driver. EBS volumes are AZ-scoped; MongoDB is intentionally a single-replica learning setup and is not multi-AZ database HA.
 
 ## Create application credentials
 
-Do not commit real credentials or a populated Kubernetes Secret manifest. Create the namespace and Secret before applying the overlay:
+Do not commit real credentials or a populated Kubernetes Secret manifest. A cluster administrator creates the namespace and StorageClass once; the deployment role only manages namespaced application resources. Create the namespace and StorageClass, then the application Secret:
 
 ```powershell
 kubectl apply -f k8s/overlays/eks/namespace.yaml
+kubectl apply -f k8s/overlays/eks/storageclass.yaml
 
 $MongoUser = "todo_admin"
 $SecurePassword = Read-Host "Enter a strong MongoDB password" -AsSecureString

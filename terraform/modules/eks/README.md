@@ -1,9 +1,9 @@
 # EKS Module
 
-Provisions the Amazon EKS cluster control plane (Kubernetes v1.30), IAM OIDC Provider for IRSA, and an EKS Managed Node Group with Spot capacity.
+Provisions the Amazon EKS cluster control plane (Kubernetes v1.37), IAM OIDC Provider for IRSA, and an EKS Managed Node Group with Spot capacity.
 
 ## Features
-- **EKS Control Plane v1.30**: Private and public endpoint access enabled.
+- **EKS Control Plane v1.37**: Private and public endpoint access enabled.
 - **IAM OIDC Provider**: Configured automatically using the cluster's OIDC issuer URL to power IAM Roles for Service Accounts (IRSA).
 - **Cost-Optimized Worker Nodes**: 2x `t3.medium` instances utilizing `SPOT` capacity type (saving ~70% on compute cost) with automatic scaling across 2 availability zones.
 - **Topology Spread Support**: Nodes distributed across private subnets to support multi-AZ scheduling of frontend, backend, and MongoDB pods.
@@ -12,7 +12,7 @@ Provisions the Amazon EKS cluster control plane (Kubernetes v1.30), IAM OIDC Pro
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | `cluster_name` | Name of the EKS cluster | `string` | n/a | yes |
-| `cluster_version` | Kubernetes control plane version | `string` | `"1.30"` | no |
+| `cluster_version` | Kubernetes control plane version | `string` | `"1.37"` | no |
 | `vpc_id` | VPC ID where cluster resources reside | `string` | n/a | yes |
 | `subnet_ids` | Private subnet IDs for cluster and nodes | `list(string)` | n/a | yes |
 | `cluster_role_arn` | ARN of the EKS cluster IAM role | `string` | n/a | yes |

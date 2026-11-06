@@ -1,6 +1,6 @@
 # Primary AWS Provider Configuration
 provider "aws" {
-  region = "ap-south-1"
+  region = var.aws_region
   # Automatically tag every resource created by this provider block
   default_tags {
     tags = {

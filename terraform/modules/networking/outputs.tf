@@ -19,6 +19,11 @@ output "private_subnet_ids" {
 }
 
 output "nat_gateway_ip" {
-  description = "Public IP of the NAT Gateway"
-  value       = aws_eip.nat.public_ip
+  description = "Primary public IP of the NAT Gateway"
+  value       = aws_eip.nat[0].public_ip
+}
+
+output "nat_gateway_ips" {
+  description = "List of public IPs assigned to the NAT Gateway(s)"
+  value       = aws_eip.nat[*].public_ip
 }

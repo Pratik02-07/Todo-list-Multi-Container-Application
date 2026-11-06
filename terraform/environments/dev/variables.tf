@@ -23,9 +23,9 @@ variable "vpc_cidr" {
 }
 
 variable "node_instance_types" {
-  description = "EC2 instance types for the EKS managed node group"
+  description = "Diversified EC2 instance types for the EKS managed node group to maximize Spot availability"
   type        = list(string)
-  default     = ["t3.medium"]
+  default     = ["t3.medium", "t3a.medium", "t2.medium"]
 }
 
 variable "node_capacity_type" {
@@ -50,4 +50,10 @@ variable "node_max_size" {
   description = "Maximum number of worker nodes"
   type        = number
   default     = 4
+}
+
+variable "enable_load_balancer_controller" {
+  description = "Enable deployment of the AWS Load Balancer Controller Helm chart (set to false during initial cluster bootstrap if needed)"
+  type        = bool
+  default     = true
 }

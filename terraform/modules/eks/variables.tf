@@ -6,7 +6,7 @@ variable "cluster_name" {
 variable "cluster_version" {
   description = "Kubernetes control plane version"
   type        = string
-  default     = "1.30"
+  default     = "1.34"
 }
 
 variable "vpc_id" {
@@ -24,9 +24,21 @@ variable "cluster_role_arn" {
   type        = string
 }
 
+variable "cluster_iam_policy_attachments" {
+  description = "Explicit dependencies on EKS cluster IAM policy attachments"
+  type        = any
+  default     = []
+}
+
 variable "node_role_arn" {
   description = "ARN of the IAM role for the EKS managed node group"
   type        = string
+}
+
+variable "node_iam_policy_attachments" {
+  description = "Explicit dependencies on EKS node group IAM policy attachments"
+  type        = any
+  default     = []
 }
 
 variable "instance_types" {

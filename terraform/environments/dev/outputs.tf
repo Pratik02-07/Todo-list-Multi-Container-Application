@@ -54,5 +54,5 @@ output "installed_addons" {
 
 output "alb_controller_release_status" {
   description = "Status of the AWS Load Balancer Controller Helm release"
-  value       = module.aws_load_balancer_controller.release_status
+  value       = try(module.aws_load_balancer_controller[0].release_status, "disabled")
 }

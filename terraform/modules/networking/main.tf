@@ -61,28 +61,34 @@ resource "aws_subnet" "private" {
 }
 
 # ── Elastic IP for NAT Gateway ────────────────────────────────────────────────
+locals {
+  nat_gateway_count = var.single_nat_gateway ? 1 : length(var.public_subnets)
+}
+
 resource "aws_eip" "nat" {
+  count  = local.nat_gateway_count
   domain = "vpc"
 
   tags = merge(
     var.tags,
     {
-      Name = "${var.cluster_name}-nat-eip"
+      Name = "${var.cluster_name}-nat-eip-${count.index}"
     }
   )
 
   depends_on = [aws_internet_gateway.main]
 }
 
-# ── Single NAT Gateway (Cost-Effective for Dev) ───────────────────────────────
+# ── NAT Gateway(s) (Single for Dev or Multi-AZ for Prod) ──────────────────────
 resource "aws_nat_gateway" "main" {
-  allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public[0].id
+  count         = local.nat_gateway_count
+  allocation_id = aws_eip.nat[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
 
   tags = merge(
     var.tags,
     {
-      Name = "${var.cluster_name}-nat"
+      Name = "${var.cluster_name}-nat-${count.index}"
     }
   )
 
@@ -112,19 +118,20 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-# ── Private Route Table ───────────────────────────────────────────────────────
+# ── Private Route Table(s) ────────────────────────────────────────────────────
 resource "aws_route_table" "private" {
+  count  = local.nat_gateway_count
   vpc_id = aws_vpc.main.id
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.main.id
+    nat_gateway_id = aws_nat_gateway.main[count.index].id
   }
 
   tags = merge(
     var.tags,
     {
-      Name = "${var.cluster_name}-private-rt"
+      Name = "${var.cluster_name}-private-rt-${count.index}"
     }
   )
 }
@@ -132,5 +139,5 @@ resource "aws_route_table" "private" {
 resource "aws_route_table_association" "private" {
   count          = length(var.private_subnets)
   subnet_id      = aws_subnet.private[count.index].id
-  route_table_id = aws_route_table.private.id
+  route_table_id = aws_route_table.private[var.single_nat_gateway ? 0 : count.index].id
 }

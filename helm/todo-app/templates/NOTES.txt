@@ -1,0 +1,26 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+1. Check deployment rollout status:
+   kubectl rollout status deployment/{{ include "todo-app.fullname" . }}-backend -n {{ .Release.Namespace }}
+   kubectl rollout status deployment/{{ include "todo-app.fullname" . }}-frontend -n {{ .Release.Namespace }}
+   kubectl rollout status statefulset/{{ include "todo-app.fullname" . }}-mongodb -n {{ .Release.Namespace }}
+
+2. Check Ingress and retrieve the Application Load Balancer (ALB) URL:
+{{- if .Values.ingress.enabled }}
+   kubectl get ingress {{ include "todo-app.fullname" . }}-ingress -n {{ .Release.Namespace }}
+
+   Wait ~2-3 minutes for AWS Load Balancer Controller to provision the ALB.
+   Get the public URL with:
+   export ALB_URL=$(kubectl get ingress {{ include "todo-app.fullname" . }}-ingress -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+   echo "Application URL: http://${ALB_URL}"
+{{- else }}
+   Ingress is disabled. Port-forward the frontend service to test locally:
+   kubectl port-forward svc/{{ include "todo-app.fullname" . }}-frontend 8080:80 -n {{ .Release.Namespace }}
+   Open: http://localhost:8080
+{{- end }}
+
+3. View all resources:
+   kubectl get pods,svc,pvc,ingress -n {{ .Release.Namespace }} -o wide

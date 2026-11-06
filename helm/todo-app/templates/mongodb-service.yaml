@@ -1,0 +1,17 @@
+{{- if .Values.mongodb.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "todo-app.fullname" . }}-mongodb
+  labels:
+    {{- include "todo-app.labels" . | nindent 4 }}
+    tier: database
+spec:
+  clusterIP: None
+  selector:
+    {{- include "todo-app.mongodbSelectorLabels" . | nindent 4 }}
+  ports:
+    - name: mongodb
+      port: {{ .Values.mongodb.service.port }}
+      targetPort: 27017
+{{- end }}

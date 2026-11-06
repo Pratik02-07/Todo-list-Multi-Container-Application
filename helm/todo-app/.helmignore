@@ -1,0 +1,15 @@
+# Default .helmignore file for Helm charts
+.DS_Store
+# Common editor artifacts
+*.swp
+*.bak
+*.tmp
+*.orig
+*~
+# Version control
+.git/
+.gitignore
+# CI files
+.github/
+# Package artifacts
+*.tgz

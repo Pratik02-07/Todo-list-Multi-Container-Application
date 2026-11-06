@@ -1,0 +1,157 @@
+# Global chart configurations
+global:
+  environment: "production"
+  # Set global image tag to override both frontend and backend tags simultaneously in CI/CD
+  image:
+    tag: ""
+
+# ── Frontend Configuration ─────────────────────────────────────────────────────
+frontend:
+  replicaCount: 2
+
+  image:
+    repository: pratik0207/todolist-frontend
+    tag: "sha-6fcbeaa636d66d3e234fc54f0e9c490751610b71"
+    pullPolicy: Always
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+  probes:
+    readiness:
+      path: /ready
+      initialDelaySeconds: 0
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+    liveness:
+      path: /health
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 3
+      failureThreshold: 3
+
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+  topologySpreadConstraints:
+    enabled: true
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway
+
+# ── Backend Configuration ──────────────────────────────────────────────────────
+backend:
+  replicaCount: 2
+
+  image:
+    repository: pratik0207/todolist-backend
+    tag: "sha-6fcbeaa636d66d3e234fc54f0e9c490751610b71"
+    pullPolicy: Always
+
+  service:
+    type: ClusterIP
+    port: 3000
+
+  env:
+    nodeEnv: "production"
+    port: 3000
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  probes:
+    startup:
+      path: /health/startup
+      periodSeconds: 5
+      failureThreshold: 30
+    readiness:
+      path: /ready
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+    liveness:
+      path: /health
+      periodSeconds: 10
+      timeoutSeconds: 3
+      failureThreshold: 3
+
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+  topologySpreadConstraints:
+    enabled: true
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway
+
+# ── MongoDB Database Configuration ─────────────────────────────────────────────
+mongodb:
+  enabled: true
+
+  image:
+    repository: mongo
+    tag: "7.0"
+    pullPolicy: IfNotPresent
+
+  service:
+    port: 27017
+
+  database: "tododb"
+
+  # Authentication
+  auth:
+    existingSecret: ""
+    rootUsername: "todo_admin"
+    rootPassword: "ChangeMeInProduction123!"
+
+  persistence:
+    enabled: true
+    storageClass: "ebs-gp3"
+    accessMode: ReadWriteOnce
+    size: 10Gi
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# ── StorageClass Configuration (AWS EBS gp3) ───────────────────────────────────
+storageClass:
+  create: true
+  name: "ebs-gp3"
+  provisioner: "ebs.csi.aws.com"
+  volumeBindingMode: "WaitForFirstConsumer"
+  allowVolumeExpansion: true
+  parameters:
+    type: "gp3"
+    encrypted: "true"
+
+# ── Ingress Configuration (AWS Load Balancer Controller) ───────────────────────
+ingress:
+  enabled: true
+  className: "alb"
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /ready
+  rules:
+    - path: /
+      pathType: Prefix

@@ -1,0 +1,13 @@
+{{- if .Values.backend.pdb.enabled -}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "todo-app.fullname" . }}-backend-pdb
+  labels:
+    {{- include "todo-app.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.backend.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "todo-app.backendSelectorLabels" . | nindent 6 }}
+{{- end }}

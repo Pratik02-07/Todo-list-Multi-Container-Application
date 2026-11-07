@@ -39,10 +39,6 @@ resource "aws_eks_cluster" "main" {
       Name = var.cluster_name
     }
   )
-
-  depends_on = [
-    var.cluster_iam_policy_attachments
-  ]
 }
 
 # ── OIDC Provider for IRSA ─────────────────────────────────────────────────────
@@ -100,8 +96,4 @@ resource "aws_eks_node_group" "main" {
   lifecycle {
     create_before_destroy = true
   }
-
-  depends_on = [
-    var.node_iam_policy_attachments
-  ]
 }

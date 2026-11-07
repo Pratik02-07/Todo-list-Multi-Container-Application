@@ -5,7 +5,7 @@ Orchestrates the complete Amazon EKS infrastructure stack for the Multi-Containe
 ## Included Modules
 - **`networking`**: VPC, 2 public subnets, 2 private subnets, 1 NAT Gateway.
 - **`iam`**: EKS cluster and node group IAM roles.
-- **`eks`**: EKS Cluster (Kubernetes 1.31) and Managed Node Group with `SPOT` capacity.
+- **`eks`**: EKS Cluster (Kubernetes 1.37) and Managed Node Group with `SPOT` capacity.
 - **`addons`**: `vpc-cni`, `coredns`, `kube-proxy`, and `aws-ebs-csi-driver` (with IRSA).
 - **`aws-load-balancer-controller`**: Official Helm chart release with dedicated IRSA role and ServiceAccount.
 

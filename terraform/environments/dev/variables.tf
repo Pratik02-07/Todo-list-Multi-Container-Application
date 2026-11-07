@@ -16,6 +16,12 @@ variable "cluster_name" {
   default     = "todo-app-eks-dev"
 }
 
+variable "cluster_version" {
+  description = "Kubernetes control plane version"
+  type        = string
+  default     = "1.37"
+}
+
 variable "vpc_cidr" {
   description = "CIDR block for the development VPC"
   type        = string

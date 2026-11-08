@@ -23,86 +23,86 @@ env:
   TF_INPUT: "false"
 
 jobs:
-  validate:
-    name: Format and validate Terraform configurations
-    runs-on: ubuntu-latest
+    validate:
+        name: Format and validate Terraform configurations
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.15.8"
+            - name: Set up Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: "1.15.8"
 
-      - name: Terraform format check
-        working-directory: ${{ github.workspace }}
-        run: terraform fmt -check -recursive -diff terraform/
+            - name: Terraform format check
+              working-directory: ${{ github.workspace }}
+              run: terraform fmt -check -recursive -diff terraform/
 
-      - name: Validate bootstrap state-backend
-        working-directory: terraform/bootstrap/state-backend
-        run: |
-          terraform init -input=false -backend=false -no-color
-          terraform validate -no-color
+            - name: Validate bootstrap state-backend
+              working-directory: terraform/bootstrap/state-backend
+              run: |
+                  terraform init -input=false -backend=false -no-color
+                  terraform validate -no-color
 
-      - name: Validate dev environment and modules
-        working-directory: terraform/environments/dev
-        run: |
-          terraform init -input=false -backend=false -no-color
-          terraform validate -no-color
+            - name: Validate dev environment and modules
+              working-directory: terraform/environments/dev
+              run: |
+                  terraform init -input=false -backend=false -no-color
+                  terraform validate -no-color
 
-  plan:
-    name: Terraform plan dev environment (main branch only)
-    needs: validate
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
+    plan:
+        name: Terraform plan dev environment (main branch only)
+        needs: validate
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
 
-    defaults:
-      run:
-        shell: bash
-        working-directory: terraform/environments/dev
+        defaults:
+            run:
+                shell: bash
+                working-directory: terraform/environments/dev
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.15.8"
+            - name: Set up Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: "1.15.8"
 
-      - name: Check AWS role configuration
-        env:
-          TERRAFORM_PLAN_ROLE_ARN: ${{ secrets.TERRAFORM_PLAN_ROLE_ARN }}
-        run: |
-          if [[ -z "$TERRAFORM_PLAN_ROLE_ARN" ]]; then
-            echo "::error::Add the repository secret TERRAFORM_PLAN_ROLE_ARN with a dedicated, least-privilege AWS IAM role for Terraform plan."
-            exit 1
-          fi
+            - name: Check AWS role configuration
+              env:
+                  TERRAFORM_PLAN_ROLE_ARN: ${{ secrets.TERRAFORM_PLAN_ROLE_ARN }}
+              run: |
+                  if [[ -z "$TERRAFORM_PLAN_ROLE_ARN" ]]; then
+                    echo "::error::Add the repository secret TERRAFORM_PLAN_ROLE_ARN with a dedicated, least-privilege AWS IAM role for Terraform plan."
+                    exit 1
+                  fi
 
-      - name: Configure AWS credentials with OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.TERRAFORM_PLAN_ROLE_ARN }}
-          aws-region: ap-south-1
-          role-session-name: TerraformPlanGitHubActions
-          role-duration-seconds: 1800
+            - name: Configure AWS credentials with OIDC
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.TERRAFORM_PLAN_ROLE_ARN }}
+                  aws-region: ap-south-1
+                  role-session-name: TerraformPlanGitHubActions
+                  role-duration-seconds: 1800
 
-      - name: Terraform init (Remote S3 Backend)
-        env:
-          TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
-        run: |
-          STATE_BUCKET="${TF_STATE_BUCKET:-multi-container-todo-list-tf-state-backend-2026}"
-          terraform init -input=false -no-color \
-            -backend-config="bucket=${STATE_BUCKET}" \
-            -backend-config="key=dev/terraform.tfstate" \
-            -backend-config="region=ap-south-1" \
-            -backend-config="encrypt=true" \
-            -backend-config="use_lockfile=true"
+            - name: Terraform init (Remote S3 Backend)
+              env:
+                  TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+              run: |
+                  STATE_BUCKET="${TF_STATE_BUCKET:-multi-container-todo-list-tf-state-backend-2026}"
+                  terraform init -input=false -no-color \
+                    -backend-config="bucket=${STATE_BUCKET}" \
+                    -backend-config="key=dev/terraform.tfstate" \
+                    -backend-config="region=ap-south-1" \
+                    -backend-config="encrypt=true" \
+                    -backend-config="use_lockfile=true"
 
-      - name: Terraform plan (dev)
-        run: terraform plan -input=false -no-color -lock-timeout=5m
+            - name: Terraform plan (dev)
+              run: terraform plan -input=false -no-color -lock-timeout=5m

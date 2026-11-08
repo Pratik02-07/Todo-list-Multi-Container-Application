@@ -1,26 +1,26 @@
 name: Terraform CI
 
 on:
-    pull_request:
-        branches:
-            - main
-        paths:
-            - "terraform/**"
-            - ".github/workflows/tf.yml"
-    push:
-        branches:
-            - main
-        paths:
-            - "terraform/**"
-            - ".github/workflows/tf.yml"
-    workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "terraform/**"
+      - ".github/workflows/tf.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "terraform/**"
+      - ".github/workflows/tf.yml"
+  workflow_dispatch:
 
 permissions:
-    contents: read
+  contents: read
 
 env:
-    TF_IN_AUTOMATION: "true"
-    TF_INPUT: "false"
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
 
 jobs:
     validate:

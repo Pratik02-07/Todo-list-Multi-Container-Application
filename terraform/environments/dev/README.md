@@ -3,11 +3,16 @@
 Orchestrates the complete Amazon EKS infrastructure stack for the Multi-Container Todo List application in `ap-south-1`.
 
 ## Included Modules
-- **`networking`**: VPC, 2 public subnets, 2 private subnets, 1 NAT Gateway.
-- **`iam`**: EKS cluster and node group IAM roles.
-- **`eks`**: EKS Cluster (Kubernetes 1.37) and Managed Node Group with `SPOT` capacity.
+- **`networking`**: Dedicated VPC, 2 public subnets, 2 private subnets, 1 NAT Gateway, Kubernetes ELB tags.
+- **`iam`**: EKS cluster, managed node group, and IRSA IAM roles with least-privilege policies.
+- **`eks`**: Amazon EKS Cluster (Kubernetes 1.31/1.32) and Managed Node Group with cost-optimized `SPOT` capacity across multiple AZs.
 - **`addons`**: `vpc-cni`, `coredns`, `kube-proxy`, and `aws-ebs-csi-driver` (with IRSA).
-- **`aws-load-balancer-controller`**: Official Helm chart release with dedicated IRSA role and ServiceAccount.
+- **`aws-load-balancer-controller`**: Official Helm chart release with dedicated IRSA role and ServiceAccount for automated ALB provisioning.
+
+## Prerequisites
+- **Terraform**: `>= 1.10.0`
+- **AWS CLI**: Authenticated to target AWS account
+- **S3 State Bucket**: Provisioned via `terraform/bootstrap/state-backend`
 
 ## Deployment Instructions
 
@@ -16,6 +21,7 @@ Create `backend.hcl` from `backend.hcl.example`:
 ```bash
 cp backend.hcl.example backend.hcl
 ```
+Ensure `use_lockfile = true` is set.
 
 ### 2. Configure Variables
 Create `terraform.tfvars` from `terraform.tfvars.example`:

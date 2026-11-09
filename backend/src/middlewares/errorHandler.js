@@ -1,3 +1,5 @@
+const logger = require('../utils/logger');
+
 /**
  * Centralized global error handling middleware.
  */
@@ -34,7 +36,12 @@ const errorHandler = (err, req, res, _next) => {
   }
 
   if (statusCode === 500) {
-    console.error('Unhandled Application Error:', err);
+    logger.error('Unhandled Application Error', {
+      error: err.message,
+      stack: err.stack,
+      path: req.originalUrl || req.url,
+      method: req.method,
+    });
   }
 
   const response = {
@@ -50,4 +57,3 @@ const errorHandler = (err, req, res, _next) => {
 };
 
 module.exports = errorHandler;
-

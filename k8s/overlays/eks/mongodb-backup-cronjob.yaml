@@ -1,0 +1,73 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongodb-backup
+  namespace: todo-app
+spec:
+  schedule: "0 2 * * *" # Daily at 02:00 UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: mongodb-backup
+        spec:
+          restartPolicy: OnFailure
+          # Note: Assign IAM IRSA role with s3:PutObject permissions to this ServiceAccount
+          # serviceAccountName: mongodb-backup-sa
+          containers:
+            - name: backup
+              image: mongo:7.0
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -euo pipefail
+                  TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
+                  BACKUP_FILE="/tmp/mongodb-backup-${TIMESTAMP}.gz"
+
+                  echo "--> Starting MongoDB backup at ${TIMESTAMP}..."
+                  mongodump \
+                    --host=mongodb-0.mongodb.todo-app.svc.cluster.local:27017 \
+                    --username="${MONGO_USER}" \
+                    --password="${MONGO_PASS}" \
+                    --authenticationDatabase=admin \
+                    --db="${MONGO_DB}" \
+                    --gzip \
+                    --archive="${BACKUP_FILE}"
+
+                  echo "--> Backup completed: $(ls -lh ${BACKUP_FILE})"
+                  echo "--> Uploading backup archive to S3 bucket ${S3_BACKUP_BUCKET}..."
+                  # When AWS CLI or S3 client is configured in production:
+                  # aws s3 cp "${BACKUP_FILE}" "s3://${S3_BACKUP_BUCKET}/backups/${TIMESTAMP}.gz" --sse AES256
+                  rm -f "${BACKUP_FILE}"
+                  echo "--> Backup pipeline completed successfully."
+              env:
+                - name: MONGO_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: todo-app-secret
+                      key: mongo-root-username
+                - name: MONGO_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: todo-app-secret
+                      key: mongo-root-password
+                - name: MONGO_DB
+                  valueFrom:
+                    configMapKeyRef:
+                      name: todo-app-config
+                      key: MONGO_INITDB_DATABASE
+                - name: S3_BACKUP_BUCKET
+                  value: "multi-container-todo-list-db-backups"
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi

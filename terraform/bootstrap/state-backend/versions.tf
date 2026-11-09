@@ -1,6 +1,6 @@
 terraform {
-  # Minimum core engine requirements
-  required_version = ">= 1.5.0"
+  # Minimum core engine requirements (>= 1.10.0 required for native S3 lockfiles)
+  required_version = ">= 1.10.0"
 
   # Declares plugins that Terraform must download
   required_providers {

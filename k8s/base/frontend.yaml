@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: pratik0207/todolist-frontend:sha-6fcbeaa636d66d3e234fc54f0e9c490751610b71
+          image: todo-frontend:latest
           imagePullPolicy: Always
           ports:
             - name: http

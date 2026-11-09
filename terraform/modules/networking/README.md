@@ -12,10 +12,10 @@ Provisions the foundational multi-AZ VPC network for the Amazon EKS cluster and 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | `cluster_name` | Name of the EKS cluster for naming and tag association | `string` | n/a | yes |
-| `vpc_cidr` | CIDR block for the VPC | `string` | `"10.0.0.0/16"` | no |
+| `vpc_cidr` | CIDR block for the VPC | `string` | `"10.50.0.0/16"` | no |
 | `availability_zones` | Availability Zones to distribute subnets | `list(string)` | `["ap-south-1a", "ap-south-1b"]` | no |
-| `public_subnets` | Public subnet CIDRs | `list(string)` | `["10.0.1.0/24", "10.0.2.0/24"]` | no |
-| `private_subnets` | Private subnet CIDRs | `list(string)` | `["10.0.10.0/24", "10.0.20.0/24"]` | no |
+| `public_subnets` | Public subnet CIDRs | `list(string)` | `["10.50.1.0/24", "10.50.2.0/24"]` | no |
+| `private_subnets` | Private subnet CIDRs | `list(string)` | `["10.50.10.0/24", "10.50.20.0/24"]` | no |
 | `single_nat_gateway` | Use single NAT Gateway for cost reduction | `bool` | `true` | no |
 | `tags` | Tags applied to resources | `map(string)` | `{}` | no |
 

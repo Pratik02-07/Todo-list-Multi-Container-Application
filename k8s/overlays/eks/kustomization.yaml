@@ -9,11 +9,15 @@ resources:
   - ingress.yaml
   - frontend-pdb.yaml
   - backend-pdb.yaml
+  - hpa.yaml
+  - networkpolicy.yaml
 
 images:
-  - name: pratik0207/todolist-backend
+  - name: todo-backend
+    newName: pratik0207/todolist-backend
     newTag: sha-4756af9d308930cd862f7d7341516f5fe77295c2
-  - name: pratik0207/todolist-frontend
+  - name: todo-frontend
+    newName: pratik0207/todolist-frontend
     newTag: sha-4756af9d308930cd862f7d7341516f5fe77295c2
 
 patches:

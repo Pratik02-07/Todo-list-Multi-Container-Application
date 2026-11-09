@@ -1,0 +1,77 @@
+name: DevSecOps Security Scan
+
+on:
+  schedule:
+    - cron: "0 0 * * 1" # Runs every Monday at midnight UTC
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "terraform/**"
+      - "backend/**"
+      - "frontend/**"
+      - "k8s/**"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  trivy:
+    name: Container & Filesystem Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.29.0
+        with:
+          scan-type: "fs"
+          ignore-unfixed: true
+          format: "table"
+          severity: "CRITICAL,HIGH"
+
+  checkov:
+    name: Terraform IaC Security Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run Checkov IaC Security Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          framework: terraform
+          directory: terraform/
+          soft_fail: true
+          output_format: cli
+
+  dependency-audit:
+    name: Node.js Production Dependency Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev

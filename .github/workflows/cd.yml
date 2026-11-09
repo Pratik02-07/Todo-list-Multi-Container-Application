@@ -1,0 +1,96 @@
+name: Todo Application CD
+
+on:
+  workflow_run:
+    workflows: ["Todo Application CI"]
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Specific image tag to deploy (e.g. sha-4756af9d308930cd862f7d7341516f5fe77295c2)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy to Amazon EKS
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.34.1
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Validate AWS Deploy Role Configuration
+        env:
+          AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+        run: |
+          if [[ -z "$AWS_DEPLOY_ROLE_ARN" ]]; then
+            echo "::warning::AWS_DEPLOY_ROLE_ARN secret is not configured. EKS automated deployment skipped until OIDC role is established."
+            exit 0
+          fi
+
+      - name: Authenticate to AWS via OIDC
+        if: ${{ secrets.AWS_DEPLOY_ROLE_ARN != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-south-1
+          role-session-name: GitHubActionsEKSDeploy
+
+      - name: Configure Kubeconfig for EKS
+        if: ${{ secrets.AWS_DEPLOY_ROLE_ARN != '' }}
+        run: |
+          aws eks update-kubeconfig --region ap-south-1 --name todo-app-eks-dev
+
+      - name: Update Deployment Image Tags
+        run: |
+          TARGET_TAG="${{ github.event.inputs.image_tag }}"
+          if [[ -z "$TARGET_TAG" ]]; then
+            TARGET_TAG="sha-${{ github.sha }}"
+          fi
+
+          echo "Target deployment tag: ${TARGET_TAG}"
+          cd k8s/overlays/eks
+          kustomize edit set image todo-backend=pratik0207/todolist-backend:${TARGET_TAG}
+          kustomize edit set image todo-frontend=pratik0207/todolist-frontend:${TARGET_TAG}
+
+      - name: Deploy to EKS (todo-app namespace)
+        if: ${{ secrets.AWS_DEPLOY_ROLE_ARN != '' }}
+        run: |
+          kubectl apply -k k8s/overlays/eks
+
+      - name: Monitor Rollout Status
+        if: ${{ secrets.AWS_DEPLOY_ROLE_ARN != '' }}
+        id: rollout
+        run: |
+          echo "--> Waiting for backend deployment rollout..."
+          kubectl rollout status deployment/backend -n todo-app --timeout=300s
+
+          echo "--> Waiting for frontend deployment rollout..."
+          kubectl rollout status deployment/frontend -n todo-app --timeout=300s
+
+      - name: Automated Rollback on Deployment Failure
+        if: ${{ failure() && steps.rollout.outcome == 'failure' && secrets.AWS_DEPLOY_ROLE_ARN != '' }}
+        run: |
+          echo "::error::Deployment rollout timed out or failed. Initiating automated rollback..."
+          kubectl rollout undo deployment/backend -n todo-app || true
+          kubectl rollout undo deployment/frontend -n todo-app || true
+          kubectl rollout status deployment/backend -n todo-app --timeout=120s || true
+          kubectl rollout status deployment/frontend -n todo-app --timeout=120s || true
+          exit 1

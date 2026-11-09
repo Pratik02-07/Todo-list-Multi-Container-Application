@@ -1,6 +1,6 @@
 services:
   backend:
-    image: pratik0207/todolist-backend:v1.0.0
+    image: todo-backend:local
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -9,8 +9,9 @@ services:
     env_file:
       - .env
     environment:
-      NODE_ENV: production
-      MONGO_URI: mongodb://mongo:27017/tododb
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/tododb}
     depends_on:
       mongo:
         condition: service_healthy
@@ -18,7 +19,7 @@ services:
       - todo_network
 
   frontend:
-    image: pratik0207/todolist-frontend:v1.0.0
+    image: todo-frontend:local
     build:
       context: .
       dockerfile: frontend/Dockerfile
@@ -34,12 +35,14 @@ services:
   mongo:
     image: mongo:7.0
     restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-tododb}
     volumes:
       - mongo_data:/data/db
     networks:
       - todo_network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
       timeout: 5s
       retries: 5

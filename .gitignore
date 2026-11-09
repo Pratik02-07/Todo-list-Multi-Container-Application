@@ -1,43 +1,40 @@
+# Dependencies
 node_modules/
-.env
 npm-debug.log
+yarn-error.log
 .DS_Store
-.reticle
-.vscode
-.reticle-setup-crash.log
-docs/superpowers/specs/2026-11-03-api-validation-nginx-persistence-design.md
+
+# Environment & Secrets
+.env
 .env.*
 !.env.example
 *.pem
 *.key
 vault-recovery/
+
+# Editor & Tooling
+.vscode/
+.reticle/
+.reticle-setup-crash.log
+
 # ==========================================
 # Terraform - Local files and sensitive data
 # ==========================================
-
-# Terraform working directories
-**/.terraform/**
-
-# Terraform state files and backups
+**/.terraform/
 *.tfstate
 *.tfstate.*
 *.tfstate.backup
-
-# Terraform variable files
+*.tfplan
 *.tfvars
 *.tfvars.json
-
-# Crash logs
+backend.hcl
+!backend.hcl.example
 crash.log
 crash.*.log
-
-# Local override files
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
-terraform.tfvars
-terraform.tfstate
-terraform.tfstate.backup
-.terraform/
-docs/superpowers
+
+# Local documentation & scratch files
+docs/superpowers/

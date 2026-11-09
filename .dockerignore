@@ -1,11 +1,33 @@
-node_modules
+# Dependencies & Logs
+node_modules/
 npm-debug.log
+yarn-error.log
+
+# Environment & Secrets
 .env
-.git
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Version Control & IDE
+.git/
+.github/
 .gitignore
+.vscode/
+.reticle/
+.reticle-setup-crash.log
+
+# Infrastructure & Kubernetes
+terraform/
+k8s/
+kind/
+
+# Documentation & Tests & Scripts
+docs/
+tests/
+scripts/
 *.md
-docs
-infrastructure
-.github
-Dockerfile
-docker-compose.yml
+
+# Compose
+docker-compose*.yml
